@@ -1,178 +1,202 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
 
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-<title>Studio Tattoo - Arte na Pele</title>
+    <title>Studio Tattoo - Arte na Pele</title>
 
-<link rel="icon" type="image/png" href="img/favicon.ico"/>
+    <link rel="icon" type="image/png" href="tattoo/tattoo/img/favicon.ico" />
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;800&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;800&family=Playfair+Display:wght@600;800&display=swap"
+        rel="stylesheet">
 
-<!-- SWIPER CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+    <!-- BOOTSTRAP CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<link rel="stylesheet" href="css/style.css">
+    <!-- SWIPER CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
-<style>
-.whatsapp-button{
-position:fixed;
-bottom:20px;
-right:20px;
-width:65px;
-height:65px;
-background:#25d366;
-border-radius:50%;
-display:flex;
-justify-content:center;
-align-items:center;
-box-shadow:0 4px 10px rgba(0,0,0,.3);
-z-index:9999;
-}
-.whatsapp-button img{width:38px}
-</style>
+    <!-- Adiciona os estilos e scripts do Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Adiciona o arquivo de tradução para português do Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 65px;
+            height: 65px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+            z-index: 9999;
+        }
+
+        .whatsapp-button img {
+            width: 38px
+        }
+    </style>
 
 </head>
 
 <body>
 
-<!-- HEADER -->
-<header class="site-header">
-<div class="container header-inner">
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="container header-inner">
 
-<div class="brand-text">
-<div class="brand-title">Led's Tattoo</div>
-<div class="brand-sub">Arte na pele — histórias para contar</div>
-</div>
+            <div class="brand-text">
+                <div class="brand-title">Led's Tattoo</div>
+                <div class="brand-sub">Arte na pele — histórias para contar</div>
+            </div>
 
-<nav class="main-nav">
-<ul>
-<li><a href="#inicio">Início</a></li>
-<li><a href="#sobre">O Estúdio</a></li>
-<li><a href="#equipe">Equipe</a></li>
-<li><a href="#galeria">Galeria</a></li>
-<li><a href="#contato" class="btn-outline">Orçamento</a></li>
-</ul>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#inicio">Início</a></li>
 
-<button class="menu-toggle">☰</button>
-</nav>
+                    <li><a href="#sobre">O Estúdio</a></li>
+                    <li><a href="#equipe">Equipe</a></li>
+                    <li><a href="#logar">Logar</a></li>
 
-</div>
-</header>
+                    <li><a href="#contato" class="btn-outline">Orçamento</a></li>
+                </ul>
 
-<!-- HERO -->
-<section id="inicio" class="hero">
-<div class="container hero-inner">
+                <button class="menu-toggle">☰</button>
+            </nav>
 
-<div class="hero-left">
-<h1 class="hero-title">
-<span>PIONEIRISMO E</span>
-<strong>MODERNIDADE</strong>
-</h1>
+        </div>
+    </header>
 
-<p class="hero-lead">
-Reconhecimento internacional e equipe especializada.
-</p>
+    <!-- HERO -->
+    <section id="inicio" class="hero">
+        <div class="container hero-inner">
 
-<a href="#contato" class="btn-primary">
-AGENDE SEU HORÁRIO
-</a>
-</div>
+            <div class="hero-left">
+                <h1 class="hero-title">
+                    <span>PIONEIRISMO E</span>
+                    <strong>MODERNIDADE</strong>
+                </h1>
 
-</div>
-</section>
+                <p class="hero-lead">
+                    Reconhecimento internacional e equipe especializada.
+                </p>
 
-<!-- SOBRE -->
-<section id="sobre" class="section about">
-<div class="container">
-<h2 class="section-title">SOBRE NÓS</h2>
-<p class="about-text">
-Muito além de um estúdio, a Led's Tattoo é um ícone da tatuagem.
-</p>
-</div>
-</section>
+                <a href="#equipe" class="btn-primary">
+                    AGENDE SEU HORÁRIO
+                </a>
+            </div>
 
-<!-- EQUIPE -->
-<section id="equipe" class="section section-dark">
-<div class="container">
+        </div>
+    </section>
 
-<h2 class="section-title center">NOSSA EQUIPE</h2>
+    <!-- SOBRE -->
+    <section id="sobre" class="section about">
+        <div class="container">
+            <h2 class="section-title center mb-5">SOBRE NÓS</h2>
+            <div class="about-content" id="aboutContent">
+                <p class="about-text typing-text" data-text="A Led's Tattoo é muito mais que um estúdio de tatuagem — somos um espaço dedicado à transformação da arte corporal em expressão pessoal autêntica.">
+                </p>
+                
+                <p class="about-text typing-text" data-text="Com reconhecimento internacional, nossa equipe de artistas especializados trabalha com excelência técnica e criatividade sem limites. Combinamos tradição, inovação e respeito artisticamente em cada trabalho realizado.">
+                </p>
+                
+                <p class="about-text typing-text" data-text="Acreditamos que toda tatuagem conta uma história. Por isso nos comprometemos em ouvir seus desejos, entender sua visão e transformá-la em arte que você carregará com orgulho pelo resto da vida.">
+                </p>
+                
+                <!-- <h3 class="about-subtitle typing-text" data-text="Nossos Valores">
+                </h3> -->
+                <!-- <ul class="about-values" id="aboutList">
+                    <li><strong>Qualidade Premium:</strong> Equipamentos de última geração e higiene rigorosa</li>
+                    <li><strong>Criatividade:</strong> Designs únicos adaptados ao seu estilo pessoal</li>
+                    <li><strong>Profissionalismo:</strong> Artistas com experiência e certificação internacional</li>
+                    <li><strong>Compromisso:</strong> Relacionamento de confiança com cada cliente</li>
+                </ul> -->
+                
+                <p class="about-text typing-text" data-text="Bem-vindo à Led's Tattoo — onde arte encontra pele, e histórias ganham vida.">
+                </p>
+            </div>
+        </div>
+    </section>
 
-<div class="swiper equipe-swiper">
+    <!-- EQUIPE -->
+    <section id="equipe" class="section section-dark">
+        <div class="container">
 
-<div class="swiper-wrapper">
+            <h3 class="section-title center">RESERVE UMA DATA COM O NOSSO TIME DE ARTISTAS</h3>
 
-<div class="swiper-slide card-artist">
-<div class="artist-photo"
-style="background-image:url('img/equipe-1.jpg')"></div>
+            <div class="swiper equipe-swiper">
 
-<div class="artist-body">
-<h3>Augusto</h3>
-<p class="artist-role">Realismo</p>
-</div>
-</div>
+                <div class="swiper-wrapper">
 
-</div>
+                    <div class="swiper-slide card-artist">
+                        <!-- <div class="artist-photo" id="equipe"
+style="background-image:url('tattoo/tattoo/img/equipe-1.jpg')"></div> -->
+                        <div id="galeriaContainer" id="equipe" class="galeria-grid artist-photo"></div>
+                        <div class="artist-body">
+                       
+                        </div>
+                    </div>
 
-<div class="swiper-button-prev"></div>
-<div class="swiper-button-next"></div>
-<div class="swiper-pagination"></div>
+                </div>
 
-</div>
-</div>
-</section>
+            
+            </div>
+        </div>
+    </section>
 
-<!-- GALERIA -->
-<section id="galeria" class="section">
-<div class="container center">
-<h2 class="section-title">Portfólio</h2>
-</div>
-</section>
 
-<!-- ✅ CONTATO (CORREÇÃO PRINCIPAL) -->
-<section id="contato" class="section">
-<div class="container center">
+    <!-- ✅ CONTATO (CORREÇÃO PRINCIPAL) -->
+    <section id="contato" class="section">
+        <div class="container center">
 
-<h2 class="section-title">FAÇA SEU ORÇAMENTO</h2>
+            <h2 class="section-title">FAÇA SEU ORÇAMENTO COM O STUDIO</h2>
 
-<p class="section-sub">
-Fale conosco diretamente pelo WhatsApp.
-</p>
+            <p class="section-sub">
+                Fale conosco diretamente pelo WhatsApp com uns dos nossos atendentes.
+            </p>
 
-<a
-href="https://wa.me/5511999999999?text=Olá%20quero%20um%20orçamento"
-class="btn-primary"
-target="_blank">
+            <a href="https://wa.me/5511999999999?text=Olá%20quero%20um%20orçamento" class="btn-primary" target="_blank">
 
-CHAMAR NO WHATSAPP
+                CHAMAR NO WHATSAPP
 
-</a>
+            </a>
 
-</div>
-</section>
+        </div>
+    </section>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-<div class="container">
-<small>
-© 2025 Led's Tattoo — Avenida Ibirapuera 3478
-</small>
-</div>
-</footer>
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container">
+            <small>
+                © 2025 Led's Tattoo — Avenida Ibirapuera 3478
+            </small>
+        </div>
+    </footer>
 
-<!-- BOTÃO WHATSAPP -->
-<a href="https://wa.me/5511999999999"
-class="whatsapp-button"
-target="_blank">
-<img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg">
-</a>
+    <!-- BOTÃO WHATSAPP -->
+    <!-- <a href="https://wa.me/5511999999999" class="whatsapp-button" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg">
+    </a> -->
 
-<!-- SWIPER JS (CORREÇÃO) -->
-<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <!-- BOOTSTRAP JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="js/script.js"></script>
+    <!-- SWIPER JS (CORREÇÃO) -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <script src="js/script.js"></script>
 
 </body>
+
 </html>
