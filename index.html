@@ -67,7 +67,7 @@
 
                     <li><a href="#sobre">O Estúdio</a></li>
                     <li><a href="#equipe">Equipe</a></li>
-                    <li><a href="#logar">Logar</a></li>
+                    <li><a id="loginButton"href="#logar">Logar</a></li>
 
                     <li><a href="#contato" class="btn-outline">Orçamento</a></li>
                 </ul>
@@ -173,7 +173,17 @@ style="background-image:url('tattoo/tattoo/img/equipe-1.jpg')"></div> -->
             </a>
 
         </div>
-    </section>
+    </section>    <script>
+      document.getElementById('loginButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Limpar qualquer sessão existente antes de redirecionar para login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('expiresIn');
+        localStorage.removeItem('loginTime');
+        // Redirecionar para a página de login
+        window.location.href = 'login.html';
+      });
+    </script>
 
     <!-- FOOTER -->
     <footer class="site-footer">

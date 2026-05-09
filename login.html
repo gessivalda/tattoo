@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Studio Tattoo</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;800&family=Playfair+Display:wght@600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
+      color: var(--white);
+    }
+
+    .login-card {
+      background: var(--card);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-card h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .login-card label {
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .login-card button {
+      margin-top: 16px;
+      width: 100%;
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      padding: 12px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .login-card button:hover {
+      background: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <h1>Login</h1>
+      <form id="loginForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" class="form-control" required>
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" class="form-control" required>
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </div>  <script>
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Credenciais inválidas');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Success:', data);
+        
+        // Armazenar token e informações de sessão
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('expiresIn', data.expiresIn);
+        localStorage.setItem('loginTime', Date.now());
+        
+        // Redirecionar para a tela de agendamentos
+        window.location.href = 'agendamentos.html';
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Erro no login: ' + error.message);
+      });
+    });
+
+    // Verificar se já está logado
+    function checkExistingSession() {
+      const token = localStorage.getItem('authToken');
+      const expiresIn = localStorage.getItem('expiresIn');
+      const loginTime = localStorage.getItem('loginTime');
+      
+      if (token && expiresIn && loginTime) {
+        const currentTime = Date.now();
+        const sessionDuration = parseInt(expiresIn) * 1000; // converter para millisegundos
+        const elapsedTime = currentTime - parseInt(loginTime);
+        
+        if (elapsedTime < sessionDuration) {
+          // Sessão ainda válida, redirecionar para agendamentos
+          window.location.href = 'agendamentos.html';
+        } else {
+          // Sessão expirada, limpar dados
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('expiresIn');
+          localStorage.removeItem('loginTime');
+        }
+      }
+    }
+
+    // Verificar sessão ao carregar a página
+    window.addEventListener('load', checkExistingSession);
+  </script>
+</body>
+
+</html>

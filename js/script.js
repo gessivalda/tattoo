@@ -1,6 +1,44 @@
 document.addEventListener('DOMContentLoaded', function () {
     let scheduledDates = []; // Inicializa a variável antes de qualquer uso
     let id = 0
+
+    /* UTILITY FUNCTION FOR RETRY LOGIC */
+    async function fetchWithRetry(url, options = {}, maxRetries = 3, delay = 1000) {
+        let lastError;
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const response = await fetch(url, options);
+                
+                // If response is ok, return it
+                if (response.ok) {
+                    return response;
+                }
+                
+                // If it's a client error (4xx), don't retry
+                if (response.status >= 400 && response.status < 500) {
+                    return response;
+                }
+                
+                // For server errors (5xx), treat as retriable error
+                throw new Error(`Server error: ${response.status}`);
+                
+            } catch (error) {
+                lastError = error;
+                console.warn(`Attempt ${attempt}/${maxRetries} failed:`, error.message);
+                
+                // If this was the last attempt, throw the error
+                if (attempt === maxRetries) {
+                    throw lastError;
+                }
+                
+                // Wait before retrying (exponential backoff)
+                const waitTime = delay * Math.pow(2, attempt - 1);
+                console.log(`Retrying in ${waitTime}ms...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            }
+        }
+    }
     /* MENU MOBILE */
     const menuToggle = document.querySelector('.menu-toggle');
     const navUl = document.querySelector('.main-nav ul');
@@ -11,45 +49,41 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* MENU ARTISTA */
-    const menuArtista = document.querySelector('#menuArtista');
-
-    /* CARREGAR EQUIPE DO SERVIÇO */
-    function carregarEquipe() {
+    const menuArtista = document.querySelector('#menuArtista');    /* CARREGAR EQUIPE DO SERVIÇO */
+    async function carregarEquipe() {
         const swiperWrapper = document.querySelector('.swiper-wrapper');
 
-        fetch('http://localhost:8080/tattoos', {
-            method: 'GET'
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                const equipe = Array.isArray(data);
-                scheduledDates = data
-                console.log(this.scheduledDates);
-
-                let cardsHTML = '';
-                // FOR para iterar sobre os membros da equipe
-                for (let i = 0; i < data.length; i++) {
-                    const membro = data[i];
-
-
-
-
-                    cardsHTML += `
-                <div class="card-artist container">
-                <div class="artist-photo" style="background-image:url('${membro.image || membro.foto}')"></div>
-                <div class="artist-body">
-                <h3>${membro.name}</h3>
-                </div>
-                </div>
-                `;
-                }
-
-                swiperWrapper.innerHTML = cardsHTML;
-            })
-            .catch(error => {
-                console.error('Erro ao carregar equipe:', error);
+        try {
+            const response = await fetchWithRetry('http://localhost:8080/tattoos', {
+                method: 'GET'
             });
+            
+            const data = await response.json();
+            console.log(data);
+            const equipe = Array.isArray(data);
+            scheduledDates = data
+            console.log(this.scheduledDates);
+
+            let cardsHTML = '';
+            // FOR para iterar sobre os membros da equipe
+            for (let i = 0; i < data.length; i++) {
+                const membro = data[i];
+
+                cardsHTML += `
+            <div class="card-artist container">
+            <div class="artist-photo" style="background-image:url('${membro.image || membro.foto}')"></div>
+            <div class="artist-body">
+            <h3>${membro.name}</h3>
+            </div>
+            </div>
+            `;
+            }
+
+            swiperWrapper.innerHTML = cardsHTML;
+        } catch (error) {
+            console.error('Erro ao carregar equipe após tentativas:', error);
+            abrirTelaErro('Não foi possível carregar a equipe. Verifique sua conexão e recarregue a página.');
+        }
     }
 
     /* FUNÇÃO PARA ABRIR TELA DE ERRO */
@@ -89,8 +123,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="modal-header">
             <h2 class="section-title center">Agendar uma data com ${nomeArtista}</h2>
             <button class="modal-fechar">&times;</button>
-            </div>
-            <div class="modal-body">
+            </div>            <div class="modal-body">
+            <label for="clientName">Nome do cliente:</label>
+            <input type="text" id="clientName" placeholder="Digite o nome do cliente" class="form-control" minlength="2" maxlength="150" required>
+            <div class="invalid-feedback" id="clientNameError"></div>
+            <br>
             <label for="dataAgendamento">Selecione uma data:</label>
             <div></div>
             <input type="date" id="dataAgendamento" placeholder="Selecione uma data" class="form-control">
@@ -111,15 +148,40 @@ document.addEventListener('DOMContentLoaded', function () {
         const fecharModal = modal.querySelector('.btn-fechar-modal');
 
         fecharBtn?.addEventListener('click', () => modal.remove());
-        fecharModal?.addEventListener('click', () => modal.remove());
-
-        const confirmarBtn = modal.querySelector('#confirmarAgendamento');
+        fecharModal?.addEventListener('click', () => modal.remove());        const confirmarBtn = modal.querySelector('#confirmarAgendamento');
+        const clientNameInput = modal.querySelector('#clientName');
+        const clientNameError = modal.querySelector('#clientNameError');
+        
         confirmarBtn.disabled = true;
         confirmarBtn.style.backgroundColor = 'gray';
         confirmarBtn.style.cursor = 'not-allowed';
 
-        dateInput.addEventListener('input', () => {
-            confirmarBtn.disabled = !dateInput.value;
+        function validateForm() {
+            const clientName = clientNameInput.value.trim();
+            const selectedDate = dateInput.value;
+            
+            // Validar nome do cliente
+            let isClientNameValid = true;
+            if (!clientName) {
+                clientNameError.textContent = 'Nome do cliente é obrigatório';
+                clientNameInput.classList.add('is-invalid');
+                isClientNameValid = false;
+            } else if (clientName.length < 2) {
+                clientNameError.textContent = 'Nome deve ter pelo menos 2 caracteres';
+                clientNameInput.classList.add('is-invalid');
+                isClientNameValid = false;
+            } else if (clientName.length > 150) {
+                clientNameError.textContent = 'Nome deve ter no máximo 150 caracteres';
+                clientNameInput.classList.add('is-invalid');
+                isClientNameValid = false;
+            } else {
+                clientNameError.textContent = '';
+                clientNameInput.classList.remove('is-invalid');
+            }
+            
+            const isFormValid = isClientNameValid && selectedDate;
+            
+            confirmarBtn.disabled = !isFormValid;
             if (confirmarBtn.disabled) {
                 confirmarBtn.style.backgroundColor = 'gray';
                 confirmarBtn.style.cursor = 'not-allowed';
@@ -127,59 +189,77 @@ document.addEventListener('DOMContentLoaded', function () {
                 confirmarBtn.style.backgroundColor = '';
                 confirmarBtn.style.cursor = 'pointer';
             }
-        });
+        }
 
-        confirmarBtn?.addEventListener('click', () => {
+        dateInput.addEventListener('input', validateForm);
+        clientNameInput.addEventListener('input', validateForm);        confirmarBtn?.addEventListener('click', () => {
             const selectedDate = dateInput.value;
+            const clientName = clientNameInput.value.trim();
 
             // Fecha o modal imediatamente ao clicar em confirmar
             modal.remove();
 
             const formattedDate = selectedDate.split('/').reverse().join('-'); // Formata a data para o formato "2026-03-25"
 
-            fetch('http://localhost:8080/tattoos/schedule', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date: formattedDate, id: id }) // Envia a data formatada e o ID do artista
-            }).then(response => {
-                if (response.ok) {
-                    console.log('Agendamento confirmado!');
+            (async () => {
+                try {
+                    const response = await fetchWithRetry('http://localhost:8080/tattoos/schedule', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ date: formattedDate, id: id, clientName: clientName })
+                    });
                     
-                    carregarEquipe()
+                    if (response.ok) {
+                        console.log('Agendamento confirmado!');
+                        
+                        carregarEquipe()
 
-                    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                    const toastContainer = document.createElement('div');
-                    toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                        const toastContainer = document.createElement('div');
+                        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
 
-                    const toast = document.createElement('div');
-                    toast.id = 'liveToast';
-                    toast.className = 'toast text-bg-light'; // Fundo branco com texto escuro
-                    toast.setAttribute('role', 'alert');
-                    toast.setAttribute('aria-live', 'assertive');
-                    toast.setAttribute('aria-atomic', 'true');
+                        const toast = document.createElement('div');
+                        toast.id = 'liveToast';
+                        toast.className = 'toast text-bg-light'; // Fundo branco com texto escuro
+                        toast.setAttribute('role', 'alert');
+                        toast.setAttribute('aria-live', 'assertive');
+                        toast.setAttribute('aria-atomic', 'true');
 
-                    toast.innerHTML = `
-                        <div class="toast-header">
-                            <strong class="me-auto text-success">Salvo com sucesso!</strong>
-                            <small>${currentTime}</small>
-                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                        <div class="toast-body">
-                           Agendamento confirmado para ${selectedDate.split('-').reverse().join('/')} com ${nomeArtista}!
-                        </div>
-                    `;
+                        toast.innerHTML = `
+                            <div class="toast-header">
+                                <strong class="me-auto text-success">Salvo com sucesso!</strong>
+                                <small>${currentTime}</small>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                               Agendamento confirmado para ${selectedDate.split('-').reverse().join('/')} com ${nomeArtista} para o cliente ${clientName}!
+                            </div>
+                        `;
 
-                    toastContainer.appendChild(toast);
-                    document.body.appendChild(toastContainer);
+                        toastContainer.appendChild(toast);
+                        document.body.appendChild(toastContainer);
 
-                    const bootstrapToast = new bootstrap.Toast(toast);
-                    bootstrapToast.show();
+                        const bootstrapToast = new bootstrap.Toast(toast);
+                        bootstrapToast.show();
+                    } else if (response.status === 400) {
+                        // Tratar erro 400 Bad Request
+                        const errorData = await response.json();
+                        let errorMessage = 'Erro de validação: ';
+                        if (errorData.message) {
+                            errorMessage += errorData.message;
+                        } else {
+                            errorMessage += 'Dados inválidos fornecidos.';
+                        }
+                        abrirTelaErro(errorMessage);
+                    } else {
+                        abrirTelaErro('Erro ao realizar agendamento. Tente novamente.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao agendar após tentativas:', error);
+                    abrirTelaErro('Erro de conexão. Verifique sua internet e tente novamente.');
                 }
-            }).catch(error => {
-                console.error('Erro:', error);
-                alert('Erro de conexão.');
-            });
+            })();
         });
 
         // Configura o calendário para exibir em português
@@ -414,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Filtra as datas agendadas para o artista clicado
             const membro = scheduledDates.find(membro => membro.name.trim() === nomeArtista.trim());
             id = membro ? membro.id : null; // Armazena o ID do artista para uso futuro
-            const artistaDatas = membro && membro.scheduledDates ? membro.scheduledDates : []; // Garante que apenas as datas do artista sejam usadas
+            const artistaDatas = membro && membro.schedules ? membro.schedules.map(schedule => schedule.date) : []; // Garante que apenas as datas do artista sejam usadas
 
             abrirTelaArtista('Agendamento', nomeArtista, artistaDatas); // Passa as datas filtradas para o modal
         }
