@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fecharModal?.addEventListener('click', () => modal.remove());
     }
 
-    function abrirTelaArtista(mensagem, nomeArtista, datasAgendadas,) {
+    function abrirTelaArtista(mensagem, nomeArtista, datasAgendadas) {
         console.log('Abrindo tela de agendamento para:', nomeArtista, datasAgendadas);
         const modal = document.createElement('div');
         modal.className = 'modal-erro';
@@ -148,7 +148,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const fecharModal = modal.querySelector('.btn-fechar-modal');
 
         fecharBtn?.addEventListener('click', () => modal.remove());
-        fecharModal?.addEventListener('click', () => modal.remove());        const confirmarBtn = modal.querySelector('#confirmarAgendamento');
+        fecharModal?.addEventListener('click', () => modal.remove());       
+         const confirmarBtn = modal.querySelector('#confirmarAgendamento');
         const clientNameInput = modal.querySelector('#clientName');
         const clientNameError = modal.querySelector('#clientNameError');
         
@@ -192,7 +193,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         dateInput.addEventListener('input', validateForm);
-        clientNameInput.addEventListener('input', validateForm);        confirmarBtn?.addEventListener('click', () => {
+        clientNameInput.addEventListener('input', validateForm);        
+        confirmarBtn?.addEventListener('click', () => {
             const selectedDate = dateInput.value;
             const clientName = clientNameInput.value.trim();
 
@@ -263,8 +265,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Configura o calendário para exibir em português
-        function configurarCalendario(datasAgendadas) {
-            const dateInput = document.querySelector('#dataAgendamento');
+        function configurarCalendario(datasAgendadas, selector) {
+            console.log('Datas agendadas para configurar o calendário:', datasAgendadas);
+            const dateInput = document.querySelector(selector);
 
             if (dateInput) {
                 const today = new Date();
@@ -298,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        configurarCalendario(datasAgendadas);
+        configurarCalendario(datasAgendadas, '#dataAgendamento');
     }
     /* 
        menuArtista?.addEventListener('click', function (e) {
@@ -370,7 +373,6 @@ document.addEventListener('DOMContentLoaded', function () {
         //         `;
 
         galeriaContainer.innerHTML = galeriaHTML;
-
         // Adicionar event listener em cada imagem
         const imagensGaleria = document.querySelector('#galeria');
         imagensGaleria.forEach(img => {

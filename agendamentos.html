@@ -149,7 +149,8 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th>Nome do Cliente</th>
+                <th>Tatuador</th>
+                <th>Cliente</th>
                 <th>Data do Agendamento</th>
                 <th>Ações</th>
               </tr>
@@ -267,22 +268,23 @@
       
       agendamentos.forEach(agendamento => {
         const schedules = agendamento.schedules || [];
-        schedules.forEach(schedule => {
-          console.log('Schedule:', schedule);
+        schedules.forEach((schedule, index) => {
+          console.log(agendamento.name)
+          console.log('Schedule:', schedule, 'Index:', index);
           // Alternativa sem usar Date()
         const [ano, mes, dia] = schedule.date.split('-');
         const dataFormatada = `${dia}/${mes}/${ano}`;
 
-          
           const row = document.createElement('tr');
           row.innerHTML = `
+           <td>${agendamento.name }</td>
             <td>${schedule.clientName || 'Nome não informado'}</td>
             <td>${dataFormatada}</td>
             <td>
-              <button class="btn-action btn-edit" onclick="editarAgendamento(${agendamento.id})">
+              <button class="btn-action btn-edit" onclick="editarAgendamento(${agendamento.id}, '${index}')">
                 Editar
               </button>
-              <button class="btn-action btn-delete" onclick="deletarAgendamento(${agendamento.id})">
+              <button class="btn-action btn-delete" onclick="deletarAgendamento(${agendamento.id}, '${index}')">
                 Deletar
               </button>
             </td>
@@ -291,9 +293,7 @@
           tableBody.appendChild(row);
         });
       });
-    }
-
-    function showError(message) {
+    }    function showError(message) {
       const errorDiv = document.getElementById('errorMessage');
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
@@ -303,26 +303,329 @@
       }, 5000);
     }
 
-    function editarAgendamento(id) {
-      // Implementar edição
-      alert(`Editar agendamento ID: ${id}`);
-      // Aqui você pode implementar um modal ou redirecionar para uma página de edição
-    }
+    function showSuccess(message) {
+      // Criar elemento de sucesso se não existir
+      let successDiv = document.getElementById('successMessage');
+      if (!successDiv) {
+        successDiv = document.createElement('div');
+        successDiv.id = 'successMessage';
+        successDiv.className = 'success';
+        successDiv.style.cssText = `
+          background: #28a745;
+          color: white;
+          padding: 15px;
+          border-radius: var(--radius);
+          margin-bottom: 20px;
+          display: none;
+        `;
+        document.getElementById('errorMessage').parentNode.insertBefore(successDiv, document.getElementById('errorMessage').nextSibling);
+      }
+      
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+      
+      setTimeout(() => {
+        successDiv.style.display = 'none';
+      }, 5000);
+    }    // Função para abrir modal de edição
+    function abrirModalEdicao(id, nomeAtual, dataAtual) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-erro';
+      modal.innerHTML = `
+        <div class="modal-conteudo">
+          <div class="modal-header">
+            <h2>Editar Agendamento</h2>
+            <button class="modal-fechar">&times;</button>
+          </div>
+          <div class="modal-body">
+            <label for="editClientName">Nome do cliente:</label>
+            <input type="text" id="editClientName" value="${nomeAtual || ''}" class="form-control" minlength="2" maxlength="150" required>
+            <div class="invalid-feedback" id="editClientNameError"></div>
+            <br>
+            <label for="editDataAgendamento">Data do agendamento:</label>
+            <input type="date" id="editDataAgendamento" value="${dataAtual || ''}" class="form-control" required>
+            <div class="invalid-feedback" id="editDataError"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-fechar-modal" id="cancelarEdicao">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="confirmarEdicao">Alterar</button>
+          </div>
+        </div>
+      `;
 
-    async function deletarAgendamento(id) {
-      if (!confirm('Tem certeza que deseja deletar este agendamento?')) {
-        return;
+      document.body.appendChild(modal);
+
+      // Configurar data mínima como hoje
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = modal.querySelector('#editDataAgendamento');
+      dateInput.setAttribute('min', today);
+
+      // Event listeners para fechar modal
+      const fecharBtn = modal.querySelector('.modal-fechar');
+      const cancelarBtn = modal.querySelector('#cancelarEdicao');
+      
+      fecharBtn?.addEventListener('click', () => modal.remove());
+      cancelarBtn?.addEventListener('click', () => modal.remove());
+
+      // Event listener para confirmar edição
+      const confirmarBtn = modal.querySelector('#confirmarEdicao');
+      const clientNameInput = modal.querySelector('#editClientName');
+      const dataInput = modal.querySelector('#editDataAgendamento');
+      const clientNameError = modal.querySelector('#editClientNameError');
+      const dataError = modal.querySelector('#editDataError');
+
+      // Validação em tempo real
+      function validateForm() {
+        const clientName = clientNameInput.value.trim();
+        const data = dataInput.value;
+        let isValid = true;
+
+        // Validar nome
+        if (clientName.length < 2) {
+          clientNameError.textContent = 'Nome deve ter pelo menos 2 caracteres';
+          clientNameError.style.display = 'block';
+          clientNameInput.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          clientNameError.style.display = 'none';
+          clientNameInput.classList.remove('is-invalid');
+        }
+
+        // Validar data
+        if (!data) {
+          dataError.textContent = 'Data é obrigatória';
+          dataError.style.display = 'block';
+          dataInput.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          dataError.style.display = 'none';
+          dataInput.classList.remove('is-invalid');
+        }
+
+        // Habilitar/desabilitar botão
+        confirmarBtn.disabled = !isValid;
+        confirmarBtn.style.backgroundColor = isValid ? '' : 'gray';
+        confirmarBtn.style.cursor = isValid ? 'pointer' : 'not-allowed';
+
+        return isValid;
       }
 
+      clientNameInput.addEventListener('input', validateForm);
+      dataInput.addEventListener('change', validateForm);
+
+      // Validação inicial
+      validateForm();
+
+      confirmarBtn.addEventListener('click', async () => {
+        if (validateForm()) {
+          const novoNome = clientNameInput.value.trim();
+          const novaData = dataInput.value;
+          
+          modal.remove();
+          await executarEdicaoAgendamento(id, dataAtual, nomeAtual, novaData, novoNome);
+        }
+      });
+    }
+
+    // Função para executar a edição do agendamento
+    async function executarEdicaoAgendamento(id, dataAtual, nomeAtual, novaData, novoNome) {
       const token = localStorage.getItem('authToken');
       
       try {
-        const response = await fetch(`http://localhost:8080/tattoos/${id}`, {
-          method: 'DELETE',
+        const response = await fetch('http://localhost:8080/tattoos/schedule', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: id,
+            currentDate: dataAtual,
+            currentClientName: nomeAtual,
+            newDate: novaData,
+            newClientName: novoNome
+          })
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            showSessionExpiredMessage();
+            clearSession();
+            setTimeout(() => {
+              redirectToLogin();
+            }, 3000);
+            return;
+          }
+          throw new Error('Erro ao editar agendamento');
+        }
+
+        showSuccess('Agendamento editado com sucesso!');
+        carregarAgendamentos();
+        
+      } catch (error) {
+        console.error('Error:', error);
+        showError('Erro ao editar agendamento: ' + error.message);
+      }
+    }
+
+    async function editarAgendamento(id, index) {
+      // Buscar dados atuais do agendamento
+      const agendamentos = await buscarAgendamentos();
+      console.log(agendamentos)
+      let agendamentoAtual = null;
+      let scheduleAtual = null;
+      let listDate = []
+      
+      // Encontrar o agendamento e schedule específicos
+      for (const agendamento of agendamentos) {
+        if (agendamento.id === id) {
+                listDate.push(agendamento.schedules[index].date)
+                          console.log(listDate)
+configurarCalendario(listDate, '#editDataAgendamento');
+          agendamentoAtual = agendamento;
+          if (agendamento.schedules && agendamento.schedules.length > 0 ) {
+            scheduleAtual =   agendamento.schedules[index]; // Pega o schedule no índice especificado
+          }
+          break;
+        }
+      }
+      
+      if (!agendamentoAtual || !scheduleAtual) {
+        showError('Agendamento não encontrado');
+        return;
+      }
+      
+      // Abrir modal de edição
+      console.log(scheduleAtual)
+      abrirModalEdicao(id, scheduleAtual.clientName, scheduleAtual.date);
+    }
+
+    // Função auxiliar para buscar agendamentos
+    async function buscarAgendamentos() {
+      const token = localStorage.getItem('authToken');
+      
+      try {
+        const response = await fetch('http://localhost:8080/tattoos', {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar agendamentos');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('Error:', error);
+        return [];
+      }
+    }  
+    
+      function configurarCalendario(datasAgendadas, selector) {
+            console.log('Datas agendadas para configurar o calendário:', datasAgendadas);
+            const dateInput = document.querySelector(selector);
+
+            if (dateInput) {
+                const today = new Date();
+
+                flatpickr.localize(flatpickr.l10ns.pt); // Configura o idioma para português
+
+                flatpickr(dateInput, {
+                    disable: [
+                        function (date) {
+                            // Bloqueia datas menores que hoje
+                            return date < today;
+                        },
+                        ...datasAgendadas.map(data => {
+                            return new Date(data + 'T00:00:00'); // Garante que a data correta seja bloqueada
+                        })
+                    ],
+                    dateFormat: 'd/m/Y', // Formato de data em português
+                    onDayCreate: function(dObj, dStr, fp, dayElem) {
+                        const disabledDates = datasAgendadas.map(data => new Date(data + 'T00:00:00').toDateString());
+                        const dayDate = new Date(dayElem.dateObj).toDateString();
+
+                        if (disabledDates.includes(dayDate)) {
+                            dayElem.style.color = 'red'; // Pinta somente o número do dia de vermelho
+                            dayElem.style.pointerEvents = 'none'; // Remove a possibilidade de clicar
+                        } else if (new Date(dayElem.dateObj) < today) {
+                            dayElem.style.color = 'red'; // Define o texto vermelho para datas menores que hoje
+                            dayElem.style.pointerEvents = 'none'; // Remove a possibilidade de clicar
+                        }
+                    }
+                });
+            }
+        }
+// Função para abrir modal de confirmação de deleção
+    function abrirModalDelecao(id, nomeCliente, dataAgendamento) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-erro';
+      
+      // Formatar data para exibição
+      const [ano, mes, dia] = dataAgendamento.split('-');
+      const dataFormatada = `${dia}/${mes}/${ano}`;
+      
+      modal.innerHTML = `
+        <div class="modal-conteudo">
+          <div class="modal-header">
+            <h2>Confirmar Deleção</h2>
+            <button class="modal-fechar">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Tem certeza que deseja deletar este agendamento?</p>
+            <br>
+            <div style="background: rgba(220, 53, 69, 0.1); padding: 15px; border-radius: 6px; border-left: 4px solid #dc3545;">
+              <strong>Dados do agendamento:</strong><br>
+              <strong>Cliente:</strong> ${nomeCliente}<br>
+              <strong>Data:</strong> ${dataFormatada}
+            </div>
+            <br>
+            <p style="color: #dc3545; font-weight: 600;">⚠️ Esta ação não pode ser desfeita!</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-fechar-modal" id="cancelarDelecao">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmarDelecao" style="background: #dc3545; color: white;">Deletar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Event listeners para fechar modal
+      const fecharBtn = modal.querySelector('.modal-fechar');
+      const cancelarBtn = modal.querySelector('#cancelarDelecao');
+      
+      fecharBtn?.addEventListener('click', () => modal.remove());
+      cancelarBtn?.addEventListener('click', () => modal.remove());
+
+      // Event listener para confirmar deleção
+      const confirmarBtn = modal.querySelector('#confirmarDelecao');
+      
+      confirmarBtn.addEventListener('click', async () => {
+        modal.remove();
+        await executarDelecaoAgendamento(id, dataAgendamento, nomeCliente);
+      });
+    }
+
+    // Função para executar a deleção do agendamento
+    async function executarDelecaoAgendamento(id, dataAgendamento, nomeCliente) {
+      const token = localStorage.getItem('authToken');
+      
+      try {
+        const response = await fetch('http://localhost:8080/tattoos/schedule', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: id,
+            date: dataAgendamento,
+            clientName: nomeCliente
+          })
         });
 
         if (!response.ok) {
@@ -337,13 +640,39 @@
           throw new Error('Erro ao deletar agendamento');
         }
 
-        // Recarregar a lista após deletar
+        showSuccess('Agendamento deletado com sucesso!');
         carregarAgendamentos();
         
       } catch (error) {
         console.error('Error:', error);
         showError('Erro ao deletar agendamento: ' + error.message);
       }
+    }
+
+    async function deletarAgendamento(id, index) {
+      // Buscar dados atuais do agendamento para obter date e clientName
+      const agendamentos = await buscarAgendamentos(); 
+      let agendamentoAtual = null;
+      let scheduleAtual = null;
+      
+      // Encontrar o agendamento e schedule específicos
+      for (const agendamento of agendamentos) {
+        if (agendamento.id === id) {
+          agendamentoAtual = agendamento;
+          if (agendamento.schedules && agendamento.schedules.length > 0) {
+            scheduleAtual = agendamento.schedules[index]; // Pega o schedule no índice especificado
+          }
+          break;
+        }
+      }
+      
+      if (!agendamentoAtual || !scheduleAtual) {
+        showError('Agendamento não encontrado');
+        return;
+      }
+
+      // Abrir modal de confirmação de deleção
+      abrirModalDelecao(id, scheduleAtual.clientName, scheduleAtual.date);
     }
 
     // Verificar sessão periodicamente
