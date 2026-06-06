@@ -269,8 +269,10 @@
         const schedules = agendamento.schedules || [];
         schedules.forEach(schedule => {
           console.log('Schedule:', schedule);
-          const dataFormatada = new Date(schedule.date).toLocaleDateString('pt-BR');
-          console.log(agendamento.schedules);
+          // Alternativa sem usar Date()
+        const [ano, mes, dia] = schedule.date.split('-');
+        const dataFormatada = `${dia}/${mes}/${ano}`;
+
           
           const row = document.createElement('tr');
           row.innerHTML = `
