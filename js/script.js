@@ -59,10 +59,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             
             const data = await response.json();
-            console.log(data);
             const equipe = Array.isArray(data);
             scheduledDates = data
-            console.log(this.scheduledDates);
 
             let cardsHTML = '';
             // FOR para iterar sobre os membros da equipe
@@ -115,8 +113,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function abrirTelaArtista(mensagem, nomeArtista, datasAgendadas) {
-        console.log('Abrindo tela de agendamento para:', nomeArtista, datasAgendadas);
+        carregarEquipe();
         const modal = document.createElement('div');
+       
         modal.className = 'modal-erro';
         modal.innerHTML = `
             <div class="modal-conteudo">
@@ -212,7 +211,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                     
                     if (response.ok) {
-                        console.log('Agendamento confirmado!');
                         
                         carregarEquipe()
 
@@ -266,9 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Configura o calendário para exibir em português
         function configurarCalendario(datasAgendadas, selector) {
-            console.log('Datas agendadas para configurar o calendário:', datasAgendadas);
             const dateInput = document.querySelector(selector);
-
             if (dateInput) {
                 const today = new Date();
 

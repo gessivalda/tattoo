@@ -2,6 +2,8 @@
 <html lang="pt-BR">
 
 <head>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agendamentos - Studio Tattoo</title>
@@ -163,7 +165,7 @@
     </div>
   </div>
 
-  <script>
+  <script >
     // Verificar autenticação ao carregar a página
     function checkAuthentication() {
       const token = localStorage.getItem('authToken');
@@ -255,7 +257,6 @@
       const loadingMessage = document.getElementById('loadingMessage');
       const tableContainer = document.getElementById('tableContainer');
       const tableBody = document.getElementById('agendamentosTableBody');
-      console.log('Agendamentos recebidos:', agendamentos);
       loadingMessage.style.display = 'none';
       tableContainer.style.display = 'block';
       
@@ -269,8 +270,7 @@
       agendamentos.forEach(agendamento => {
         const schedules = agendamento.schedules || [];
         schedules.forEach((schedule, index) => {
-          console.log(agendamento.name)
-          console.log('Schedule:', schedule, 'Index:', index);
+       
           // Alternativa sem usar Date()
         const [ano, mes, dia] = schedule.date.split('-');
         const dataFormatada = `${dia}/${mes}/${ano}`;
@@ -329,6 +329,10 @@
       }, 5000);
     }    // Função para abrir modal de edição
     function abrirModalEdicao(id, nomeAtual, dataAtual) {
+      console.log(dataAtual)
+      const [dia, mes, ano] = dataAtual.split("-");
+          const dataFormatada = `${ano}/${mes}/${dia}`;
+      console.log(dataFormatada)
       const modal = document.createElement('div');
       modal.className = 'modal-erro';
       modal.innerHTML = `
@@ -343,8 +347,7 @@
             <div class="invalid-feedback" id="editClientNameError"></div>
             <br>
             <label for="editDataAgendamento">Data do agendamento:</label>
-            <input type="date" id="editDataAgendamento" value="${dataAtual || ''}" class="form-control" required>
-            <div class="invalid-feedback" id="editDataError"></div>
+            <input type="date" id="editDataAgendamento" placeholder="${dataFormatada}" value="${dataFormatada}" class="form-control" >
           </div>
           <div class="modal-footer">
             <button type="button" class="btn-fechar-modal" id="cancelarEdicao">Cancelar</button>
@@ -392,15 +395,15 @@
         }
 
         // Validar data
-        if (!data) {
-          dataError.textContent = 'Data é obrigatória';
-          dataError.style.display = 'block';
-          dataInput.classList.add('is-invalid');
-          isValid = false;
-        } else {
-          dataError.style.display = 'none';
-          dataInput.classList.remove('is-invalid');
-        }
+        // if (!data) {
+        //   dataError.textContent = 'Data é obrigatória';
+        //   dataError.style.display = 'block';
+        //   dataInput.classList.add('is-invalid');
+        //   isValid = false;
+        // } else {
+        //   dataError.style.display = 'none';
+        //   dataInput.classList.remove('is-invalid');
+        // }
 
         // Habilitar/desabilitar botão
         confirmarBtn.disabled = !isValid;
@@ -419,18 +422,25 @@
       confirmarBtn.addEventListener('click', async () => {
         if (validateForm()) {
           const novoNome = clientNameInput.value.trim();
+            if(dataInput.value === "") {
+              await executarEdicaoAgendamento(id, dataAtual, nomeAtual, dataAtual, novoNome);
+              modal.remove();
+              return;
+          }
           const novaData = dataInput.value;
-          
+          const [dia, mes, ano] = novaData.split("/");
+          const dataFormatada = `${ano}-${mes}-${dia}`;
           modal.remove();
-          await executarEdicaoAgendamento(id, dataAtual, nomeAtual, novaData, novoNome);
+          await executarEdicaoAgendamento(id, dataAtual, nomeAtual, dataFormatada, novoNome);
         }
       });
+
     }
 
     // Função para executar a edição do agendamento
     async function executarEdicaoAgendamento(id, dataAtual, nomeAtual, novaData, novoNome) {
       const token = localStorage.getItem('authToken');
-      
+      console.log(dataAtual )
       try {
         const response = await fetch('http://localhost:8080/tattoos/schedule', {
           method: 'PUT',
@@ -471,17 +481,13 @@
     async function editarAgendamento(id, index) {
       // Buscar dados atuais do agendamento
       const agendamentos = await buscarAgendamentos();
-      console.log(agendamentos)
       let agendamentoAtual = null;
       let scheduleAtual = null;
       let listDate = []
-      
       // Encontrar o agendamento e schedule específicos
       for (const agendamento of agendamentos) {
         if (agendamento.id === id) {
-                listDate.push(agendamento.schedules[index].date)
-                          console.log(listDate)
-configurarCalendario(listDate, '#editDataAgendamento');
+          listDate = agendamento.schedules.map(schedule => schedule.date);
           agendamentoAtual = agendamento;
           if (agendamento.schedules && agendamento.schedules.length > 0 ) {
             scheduleAtual =   agendamento.schedules[index]; // Pega o schedule no índice especificado
@@ -496,10 +502,14 @@ configurarCalendario(listDate, '#editDataAgendamento');
       }
       
       // Abrir modal de edição
-      console.log(scheduleAtual)
       abrirModalEdicao(id, scheduleAtual.clientName, scheduleAtual.date);
+      console.log(scheduleAtual.date)
+      customCalendar(listDate);
     }
 
+    function customCalendar(listDate){
+      configurarCalendario(listDate, '#editDataAgendamento');
+    }
     // Função auxiliar para buscar agendamentos
     async function buscarAgendamentos() {
       const token = localStorage.getItem('authToken');
@@ -525,9 +535,8 @@ configurarCalendario(listDate, '#editDataAgendamento');
     }  
     
       function configurarCalendario(datasAgendadas, selector) {
-            console.log('Datas agendadas para configurar o calendário:', datasAgendadas);
-            const dateInput = document.querySelector(selector);
-
+        console.log(datasAgendadas)
+            const dateInput = document.querySelector('#editDataAgendamento');
             if (dateInput) {
                 const today = new Date();
 
